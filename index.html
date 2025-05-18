@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Demo Subida de Archivos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">Sube un archivo</h1>
+    <input id="fileInput" type="file" class="block w-full mb-4" />
+    <button id="uploadBtn"
+      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded">
+      Subir
+    </button>
+    <pre id="result" class="mt-4 text-gray-700 whitespace-pre-wrap"></pre>
+  </div>
+
+  <script>
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const result = document.getElementById('result');
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        result.textContent = 'Por favor, elige un archivo primero.';
+        return;
+      }
+      result.textContent = 'Subiendo…';
+      const payload = {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      };
+      try {
+        const res = await fetch('/.netlify/functions/archivoSubido', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        result.textContent = 
+          `✔ ${data.message}\n` +
+          `Nombre: ${data.fileName}\n` +
+          `Tipo: ${data.fileType}\n` +
+          `Tamaño: ${data.fileSize} bytes`;
+      } catch (e) {
+        result.textContent = '❌ Error al subir: ' + e.message;
+      }
+    });
+  </script>
+</body>
+</html>
